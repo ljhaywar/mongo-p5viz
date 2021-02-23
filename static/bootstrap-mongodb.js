@@ -9,15 +9,17 @@ const client = new MongoClient(
 );
 
 // generate some mock data
-client.connect()
-  .then(() => client.db('p5js').dropCollection('circles'))
-  .catch(() => {})
-  .then(() => client.db('p5js').createCollection('circles', {
-    // these circles are ephemeral, so a small capped collection will suffice
-    capped: true,
-    size: 1024
-  }))
-  .then(recursivelyAddCircles);
+// client.connect()
+//   .then(() => client.db('p5js').dropCollection('circles'))
+//   .catch(() => {})
+//   .then(() => client.db('p5js').createCollection('circles', {
+//     // these circles are ephemeral, so a small capped collection will suffice
+//     capped: true,
+//     size: 1024
+//   }))
+//   .then(recursivelyAddCircles);
+
+client.connect();
 
 function randomInt(maximum) {
   return Math.floor(maximum * Math.random());
