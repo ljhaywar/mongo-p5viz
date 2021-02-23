@@ -12,6 +12,7 @@
     "electron": "^11.3.0"
   },
   "dependencies": {
+    "monaco-editor": "^0.22.3",
     "mongodb": "^3.6.4",
     "p5": "^1.2.0"
   }
