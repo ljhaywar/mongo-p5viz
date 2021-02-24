@@ -163,8 +163,7 @@ function updateNode(_id, updateDescription) {
     delete nodeToUpdate[field];
   });
   
-  console.log(`Updated node with _id ${_id}. New node:`);
-  console.log(nodeToUpdate);
+  console.log(`Updated node with _id ${_id}`);
 }
 
 function replaceNode(_id, fullDocument) {
