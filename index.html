@@ -5,23 +5,30 @@
     <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
     <script src="static/bootstrap-mongodb.js"></script>
     <script src="node_modules/p5/lib/p5.min.js"></script>
-    <script src="static/sketch.js"></script>
 </head>
 <body style="background: black;">
-    <div id="container" style="width: 100%; height: 200px; border: 1px solid #ccc; bottom: 0px; position: absolute;"></div>
+    <div id="wrapper" style="width: 100%; height: 200px; border: 1px solid #ccc; bottom: 0px; position: absolute;">
+      <div id="controls" style="width: 100%; height: 20px; background-color: green; color: white">
+        <select id="switch-sketch" title="Switch sketch" onchange="userAction('switch')" id="current-sketch"></select>
+        <button title="Save to disk" onclick="userAction('save')">Save</button>
+        <button title="Create a new sketch" onclick="userAction('new')">New</button>
+      </div>
+      <div id="editor-container" style="width: 100%; height: 190px"></div>
+    </div>
 </body>
 <script src="node_modules/monaco-editor/min/vs/loader.js"></script>
 <script>
     require.config({ paths: { vs: 'node_modules/monaco-editor/min/vs' } });
     require(['vs/editor/editor.main'], function () {
-        window.editor = monaco.editor.create(document.getElementById('container'), {
-            value: `// Note: this is a read-only view for now, edit sketch.js and restart the program to refresh\n\n${
-                currentSketch.toString()
-            }`,
+        initialize(monaco.editor.create(document.getElementById('editor-container'), {
             language: 'javascript',
             theme: 'vs-dark',
             automaticLayout: true
-        });
+        }));
     });
+    const script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src = `sketches/${selectedSketch}`;
+    document.head.append(script);
 </script>
 </html>
