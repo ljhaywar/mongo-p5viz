@@ -1,5 +1,7 @@
 let nodes = [];
 
+const circleSizeMultiplier = 50;
+
 function windowHeightNoEditor() {
   return windowHeight - 200;
 }
@@ -24,62 +26,33 @@ async function setup() {
   const changeStream = circlesCollection.watch();
   changeStream.on('change', change => processChangeEvent(change));
 
-  // // Get started with some sample data
-  // const sampleData = [
-  //   {
-  //     name: 'Lauren',
-  //     color: 'pink',
-  //     size: 5
-  //   },
-  //   {
-  //     name: 'Eric',
-  //     color: 'orange',
-  //     size: 7
-  //   },
-  //   {
-  //     name: 'Joe',
-  //     color: 'green',
-  //     size: 3
-  //   },
-  // ]
-  // circlesCollection.insertMany(sampleData);
-
-  setTimeout(() => {
-    // Get started with some sample data
-    const sampleData = [
-      {
-        name: 'Lauren',
-        color: 'pink',
-        size: 5
-      },
-      {
-        name: 'Eric',
-        color: 'orange',
-        size: 7
-      },
-      {
-        name: 'Joe',
-        color: 'green',
-        size: 1
-      },
-    ]
-    circlesCollection.insertMany(sampleData);
-    resolve();
-  }, 5000);
+  // Load sample data
+  const sampleData = [
+    {
+      name: 'Lauren',
+      color: 'pink',
+      size: 5
+    },
+    {
+      name: 'Eric',
+      color: 'orange',
+      size: 7
+    },
+    {
+      name: 'Joe',
+      color: 'green',
+      size: 3
+    },
+  ]
+  // Wait for the change stream to be started and then insert the sample data
+  waitForStarted(changeStream, () => circlesCollection.insertMany(sampleData));
 
 }
 
 function draw() {
-  clear();
-  const now = Date.now();
-
-  //   //TODO: figure out what these are doing
-  //   const normX = Math.floor(windowWidth * circle.x / VIRTUAL_SIZE);
-  //   const normY = Math.floor(windowHeightNoEditor() * circle.y / VIRTUAL_SIZE);
-
   nodes.forEach(node => {
     fill(node.color);
-    ellipse(node.x, node.y, node.size * 50)
+    ellipse(node.x, node.y, node.size * circleSizeMultiplier)
     
     fill('black');
     text(node.name, node.x, node.y);
@@ -88,6 +61,24 @@ function draw() {
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeightNoEditor());
+}
+
+/**
+ * Waits for a change stream to start
+ * This function taken from https://github.com/mongodb/node-mongodb-native/blob/3.6/test/functional/change_stream.test.js#L81-L96
+ *
+ * @param {ChangeStream} changeStream
+ * @param {function} callback
+ */
+function waitForStarted(changeStream, callback) {
+  const timeout = setTimeout(() => {
+    throw new Error('Change stream never started');
+  }, 2000);
+
+  changeStream.cursor.once('init', () => {
+    clearTimeout(timeout);
+    callback();
+  });
 }
 
 function processChangeEvent(change) {
@@ -110,14 +101,17 @@ function processChangeEvent(change) {
 }
 
 function insertNode(_id, name, color, size) {
-  //TODO: fix x and y
+  // I think I calculated the x and y correctly in order to keep the nodes in the canvas, but I'm not 100%
+
+  // Calculate the maximum Node radius based on a size scale of 1 to 10
+  const maxNodeRadius = 10 * circleSizeMultiplier / 2;
   let node = {
     _id,
     name,
     color,
     size: size,
-    x: Math.floor(Math.random() * 1000),
-    y: Math.floor(Math.random() * 1000),
+    x: Math.floor(Math.random() * ( (windowWidth - maxNodeRadius) - maxNodeRadius)) + maxNodeRadius,
+    y: Math.floor(Math.random() * ( (windowHeightNoEditor() - maxNodeRadius) - maxNodeRadius) ) + maxNodeRadius
   }
   nodes.push(node);
   console.log(`Inserted node with _id ${_id}`)
