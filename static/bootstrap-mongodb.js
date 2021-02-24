@@ -31,7 +31,10 @@ function actionData(actionName) {
     case 'save':
       return { file: currentSketch(), content: editor.getValue() };
     case 'new':
-      const next = Math.max(...sketchFiles.map(file => parseInt(file.replace(/^sketch(\d+)\.js$/, '$1')))) + 1;
+      const userSketches = sketchFiles
+        .filter(file => file.startsWith('sketch'))
+        .map(file => parseInt(file.replace(/^sketch(\d+)\.js$/, '$1')));
+      const next = Math.max(0, ...userSketches) + 1;
       return { file: `sketch${next}.js` };
     case 'switch':
       return { file: currentSketch() };

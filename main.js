@@ -4,6 +4,10 @@ const config = require('./config');
 const { app, BrowserWindow, ipcMain } = require('electron');
 let win;
 
+if (!fs.existsSync('./selected')) {
+  fs.writeFileSync('./selected.js', `module.exports = 'sample1.js';\n`);
+}
+
 const sharedState = {
   selectedSketch: require('./selected')
 };
