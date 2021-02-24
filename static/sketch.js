@@ -50,6 +50,19 @@ async function setup() {
 }
 
 function draw() {
+  clear();
+  background('black');
+
+  if (mouseIsPressed) {
+    nodes.forEach(node => {
+      if (isPointInsideCircle(mouseX, mouseY, node.x, node.y, node.size * circleSizeMultiplier / 2 )) {
+        console.log(node.name);
+        node.x = mouseX;
+        node.y = mouseY;
+      }
+    });
+  }
+
   nodes.forEach(node => {
     fill(node.color);
     ellipse(node.x, node.y, node.size * circleSizeMultiplier)
@@ -57,6 +70,8 @@ function draw() {
     fill('black');
     text(node.name, node.x, node.y);
   });
+
+  
 }
 
 function windowResized() {
@@ -79,6 +94,13 @@ function waitForStarted(changeStream, callback) {
     clearTimeout(timeout);
     callback();
   });
+}
+
+function isPointInsideCircle(pointX, pointY, circleX, circleY, radius) {
+  if ( ((pointX - circleX) ** 2) + ((pointY - circleY) ** 2) <= radius ** 2 ) {
+    return true;
+  }
+  return false;
 }
 
 function processChangeEvent(change) {
