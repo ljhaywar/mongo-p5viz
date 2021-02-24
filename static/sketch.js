@@ -91,7 +91,6 @@ function deleteNode(_id) {
   console.log(`Deleted node with _id ${_id}`)
 }
 
-//TODO: need to test this with the shell as Atlas only does a replace
 function updateNode(_id, updateDescription) {
   const nodeToUpdate = nodes.find(node => _id.equals(node._id));
   if (!nodeToUpdate) {
