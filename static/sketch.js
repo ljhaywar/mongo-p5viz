@@ -7,7 +7,7 @@ function windowHeightNoEditor() {
 }
 
 async function setup() {
-  // retry in 100ms if the database hasnt connected yet
+  // retry in 100ms if the database hasn't connected yet
   if (!client.isConnected()) {
     return setTimeout(() => setup(), 100);
   }
@@ -56,7 +56,6 @@ function draw() {
   if (mouseIsPressed) {
     nodes.forEach(node => {
       if (isPointInsideCircle(mouseX, mouseY, node.x, node.y, node.size * circleSizeMultiplier / 2 )) {
-        console.log(node.name);
         node.x = mouseX;
         node.y = mouseY;
       }
