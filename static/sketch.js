@@ -1,29 +1,72 @@
 let nodes = [];
 
-//TODO: get rid of these after pulling initial data from the database
-let lauren = insertNode('1', 'Lauren', 'pink', 3);
-let eric = insertNode('2', 'Eric', 'orange', 5);
-let karen = insertNode('3', 'Karen', 'purple', 7);
-
 function windowHeightNoEditor() {
   return windowHeight - 200;
 }
 
-function setup() {
+async function setup() {
   // retry in 100ms if the database hasnt connected yet
   if (!client.isConnected()) {
     return setTimeout(() => setup(), 100);
   }
+
+  const circlesCollection = client.db('p5js').collection('circles');
 
   createCanvas(windowWidth, windowHeightNoEditor());
   textSize(14);
   textAlign(CENTER, CENTER);
   background(220);
 
-  const changeStream = client.db('p5js').collection('circles').watch();
+  // Drop the "circles" collection, so we start fresh
+  circlesCollection.drop();
+
+  // Open the change stream
+  const changeStream = circlesCollection.watch();
   changeStream.on('change', change => processChangeEvent(change));
 
-  //TODO: Prepopulate the diagram with nodes already in the database OR drop the collection and add some  initial data here
+  // // Get started with some sample data
+  // const sampleData = [
+  //   {
+  //     name: 'Lauren',
+  //     color: 'pink',
+  //     size: 5
+  //   },
+  //   {
+  //     name: 'Eric',
+  //     color: 'orange',
+  //     size: 7
+  //   },
+  //   {
+  //     name: 'Joe',
+  //     color: 'green',
+  //     size: 3
+  //   },
+  // ]
+  // circlesCollection.insertMany(sampleData);
+
+  setTimeout(() => {
+    // Get started with some sample data
+    const sampleData = [
+      {
+        name: 'Lauren',
+        color: 'pink',
+        size: 5
+      },
+      {
+        name: 'Eric',
+        color: 'orange',
+        size: 7
+      },
+      {
+        name: 'Joe',
+        color: 'green',
+        size: 1
+      },
+    ]
+    circlesCollection.insertMany(sampleData);
+    resolve();
+  }, 5000);
+
 }
 
 function draw() {
