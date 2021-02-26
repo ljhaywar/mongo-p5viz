@@ -29,19 +29,19 @@ async function setup() {
   // Load sample data
   const sampleData = [
     {
-      name: 'Lauren',
+      name: 'This Project',
       color: 'pink',
       size: 5
     },
     {
-      name: 'Eric',
+      name: 'Deserves',
       color: 'orange',
       size: 7
     },
     {
-      name: 'Joe',
+      name: 'A Prize!',
       color: 'green',
-      size: 3
+      size: 6
     },
   ]
   // Wait for the change stream to be started and then insert the sample data

@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<!-- This a webpage that can be used in conjunction with the sample1.js sketch
+     to allow external users to insert, update, replace, and delete circles. 
+     -->
+<html>
+
+<head>
+
+</head>
+
+<style>
+  .error {
+    color: red;
+  }
+</style>
+
+<body>
+  <!-- TODO: Make this page pretty -->
+  <!-- TODO: This code was put together VERY quickly. It could definitely use some cleaning -->
+  <h1>Circle Maker</h1>
+  You are on your honor to play nicely. There is limited input validation. Be kind to the app.
+
+  <div id="insertFrom">
+    <h2>Insert</h2>
+    <div id="insertErrors" class="error"></div>
+    Insert a new node:<br>
+    <label for="newName">Name:</label>
+    <input type="text" id="newName"><br>
+    
+    <label for="newSize">Size:</label>
+    <select id="newSize">
+      <option style="display:none"></option>
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+      <option value="5">5</option>
+      <option value="6">6</option>
+      <option value="7">7</option>
+      <option value="8">8</option>
+      <option value="9">9</option>
+      <option value="10">10</option>
+    </select><br>
+
+    <label for="newColor">Color:</label>
+    <select id="newColor">
+      <option style="display:none"></option>
+      <option value="blue">blue</option>
+      <option value="green">green</option>
+      <option value="orange">orange</option>
+      <option value="pink">pink</option>
+      <option value="purple">purple</option>
+      <option value="red">red</option>
+      <option value="yellow">yellow</option>
+    </select><br>
+
+    <input type="submit" value="Insert" id="insertButton">
+
+  </div>
+
+  <div id="updateFrom">
+    <h2>Update</h2>
+    <div id="updateErrors" class="error"></div>
+    Update a node:<br>
+
+    <label for="updateSelect">Node to update:</label>
+    <select id="updateSelect">
+      <option style="display:none"></option>
+    </select><br>
+
+    <label for="updateName">Name:</label>
+    <input type="text" id="updateName"><br>
+    
+    <label for="updateSize">Size:</label>
+    <select id="updateSize">
+      <option style="display:none"></option>
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+      <option value="5">5</option>
+      <option value="6">6</option>
+      <option value="7">7</option>
+      <option value="8">8</option>
+      <option value="9">9</option>
+      <option value="10">10</option>
+    </select><br>
+
+    <label for="updateColor">Color:</label>
+    <select id="updateColor">
+      <option style="display:none"></option>
+      <option value="blue">blue</option>
+      <option value="green">green</option>
+      <option value="orange">orange</option>
+      <option value="pink">pink</option>
+      <option value="purple">purple</option>
+      <option value="red">red</option>
+      <option value="yellow">yellow</option>
+    </select><br>
+
+    <input type="submit" value="Update" id="updateButton">
+
+  </div>
+
+  <div id="replaceFrom">
+    <h2>Replace</h2>
+    <div id="replaceErrors" class="error"></div>
+    Replace a node:<br>
+
+    <label for="replaceSelect">Node to replace:</label>
+    <select id="replaceSelect">
+      <option style="display:none"></option>
+    </select><br>
+
+    <label for="replaceName">Name:</label>
+    <input type="text" id="replaceName"><br>
+    
+    <label for="replaceSize">Size:</label>
+    <select id="replaceSize">
+      <option style="display:none"></option>
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+      <option value="5">5</option>
+      <option value="6">6</option>
+      <option value="7">7</option>
+      <option value="8">8</option>
+      <option value="9">9</option>
+      <option value="10">10</option>
+    </select><br>
+
+    <label for="replaceColor">Color:</label>
+    <select id="replaceColor">
+      <option style="display:none"></option>
+      <option value="blue">blue</option>
+      <option value="green">green</option>
+      <option value="orange">orange</option>
+      <option value="pink">pink</option>
+      <option value="purple">purple</option>
+      <option value="red">red</option>
+      <option value="yellow">yellow</option>
+    </select><br>
+
+    <input type="submit" value="Replace" id="replaceButton">
+
+  </div>
+
+
+  <div id="deleteForm">
+    <h2>Delete</h2>
+    <div id="deleteErrors" class="error"></div>
+    Select a node to delete:<br>
+    <select id="deleteSelect">
+      <option style="display:none"></option>
+    </select>
+    <input type="submit" value="Delete" id="deleteButton">
+  </div>
+
+
+</body>
+
+<script src="https://unpkg.com/realm-web@1.2.0/dist/bundle.iife.js"></script>
+<script>
+
+  const app = new Realm.App({ id: 'p5viz-nylbg' });
+
+  let mongodb;
+  let nodes;
+
+  main();
+
+  async function main(){
+    await authenticate();
+
+    mongodb = app.currentUser.mongoClient("mongodb-atlas");
+    circlesCollection = await mongodb.db("p5js").collection("circles");
+
+    const nodes = await getNodes();
+    addNodesToSelectElements(nodes);
+
+    document.getElementById("deleteButton").addEventListener("click", deleteNode);
+    document.getElementById("insertButton").addEventListener("click", insertNode);
+    document.getElementById("updateButton").addEventListener("click", updateNode);
+    document.getElementById("replaceButton").addEventListener("click", replaceNode);
+  }
+
+  async function authenticate() {
+    const credentials = Realm.Credentials.anonymous();
+    try {
+      // Authenticate the user
+      const user = await app.logIn(credentials);
+      console.log(user);
+    } catch(err) {
+      console.error("Failed to log in", err);
+    }
+  }
+
+  async function insertNode() {
+    console.log("clicked insert");
+    const insertErrors = document.getElementById("insertErrors");
+    
+    const newName = document.getElementById("newName").value;
+    if (!newName) {
+      insertErrors.innerHTML = "Must input a name";
+      return;
+    }
+    const newSize = document.getElementById("newSize").value;
+    if (!newSize) {
+      insertErrors.innerHTML = "Must select a size";
+      return;
+    }
+    const newColor = document.getElementById("newColor").value;
+    if (!newColor) {
+      insertErrors.innerHTML = "Must select a color";
+      return;
+    }
+
+    const result = await circlesCollection.insertOne(
+      {
+        name: newName,
+        size: newSize,
+        color: newColor
+      });
+    console.log(result);
+    if(!result.insertedId) {
+      insertErrors.innerHTML = result;
+      return;
+    }
+    location.reload();
+  }
+
+  async function deleteNode() {
+    console.log("clicked delete");
+    const deleteErrors = document.getElementById("deleteErrors");
+
+    const idOfNodeToDelete = document.getElementById("deleteSelect").value;
+    if (!idOfNodeToDelete) {
+      deleteErrors.innerHTML = "Must select a node to delete";
+      return;
+    }
+
+    const result = await circlesCollection.deleteOne({_id: new Realm.BSON.ObjectId(idOfNodeToDelete)});
+    console.log(result);
+    if(result.deletedCount !== 1){
+      deleteErrors.innerHTML = "No nodes were deleted. Perhaps the node was already deleted. Refresh the page and try again.";
+      return;
+    }
+    location.reload();
+  }
+
+  async function updateNode() {
+    console.log("clicked update");
+    const updateErrors = document.getElementById("updateErrors");
+
+    const idOfNodeToUpdate = document.getElementById("updateSelect").value;
+    if (!idOfNodeToUpdate) {
+      updateErrors.innerHTML = "Must select a node to update";
+      return;
+    }
+    
+    let newValues = {};
+
+    const updateName = document.getElementById("updateName").value;
+    if (updateName) newValues.name = updateName;
+
+    const updateSize = document.getElementById("updateSize").value;
+    if (updateSize) newValues.size = updateSize;
+
+    const updateColor = document.getElementById("updateColor").value;
+    if (updateColor) newValues.color = updateColor;
+
+    if (Object.keys(newValues).length === 0) {
+      updateErrors.innerHTML = "Must update at least one property";
+      return;
+    }
+
+    const result = await circlesCollection.updateOne(
+      {_id: new Realm.BSON.ObjectId(idOfNodeToUpdate)},
+      {$set: newValues});
+    if (result.matchedCount !== 1) {
+      updateErrors.innerHTML = "Did not find a matching node to update. Perhaps the node was deleted. Refresh the page and try again.";
+      return;
+    }
+    if (result.modifiedCount !== 1) {
+      updateErrors.innerHTML = "No nodes were updated. Refresh the page and try again.";
+      return;
+    }
+    location.reload();
+  }
+
+  async function replaceNode() {
+    console.log("clicked replace");
+    const replaceErrors = document.getElementById("replaceErrors");
+
+    const idOfNodeToReplace = document.getElementById("replaceSelect").value;
+    if (!idOfNodeToReplace) {
+      replaceErrors.innerHTML = "Must select a node to replace";
+      return;
+    }
+
+    const replaceName = document.getElementById("replaceName").value;
+    if (!replaceName) {
+      replaceErrors.innerHTML = "Must input a name";
+      return;
+    }
+    const replaceSize = document.getElementById("replaceSize").value;
+    if (!replaceSize) {
+      replaceErrors.innerHTML = "Must select a size";
+      return;
+    }
+    const replaceColor = document.getElementById("replaceColor").value;
+    if (!replaceColor) {
+      replaceErrors.innerHTML = "Must select a color";
+      return;
+    }
+
+    const result = await circlesCollection.findOneAndReplace(
+      {
+        _id: new Realm.BSON.ObjectId(idOfNodeToReplace)
+      },
+      {
+        name: replaceName,
+        size: replaceSize,
+        color: replaceColor
+      });
+      console.log(result);
+    if (!result) {
+      replaceErrors.innerHTML = "No nodes were replaced. Perhaps the node was deleted. Refresh the page and try again.";
+      return;
+    }
+    location.reload();
+  }
+  
+  async function getNodes() {
+    const nodes = await circlesCollection.find();
+    console.log(nodes);
+    return nodes;
+  }
+
+  function addNodesToSelectElements(nodes) {
+    const deleteSelect = document.getElementById("deleteSelect");
+    const updateSelect = document.getElementById("updateSelect");
+
+    nodes.forEach( (node) => {
+      let deleteOption = document.createElement("option");
+      deleteOption.value = node._id;
+      deleteOption.innerHTML = node.name;
+      deleteSelect.append(deleteOption);
+
+      let updateOption = document.createElement("option");
+      updateOption.value = node._id;
+      updateOption.innerHTML = node.name;
+      updateSelect.append(updateOption);
+
+      let replaceOption = document.createElement("option");
+      replaceOption.value = node._id;
+      replaceOption.innerHTML = node.name;
+      replaceSelect.append(replaceOption);
+    });
+  }
+
+
+
+
+</script>
+
+</html>
